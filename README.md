@@ -25,3 +25,29 @@ Sua missão é atuar como um engenheiro de qualidade para encontrar essas fraque
     - Rode o Stryker novamente e verifique se sua pontuação de mutação aumentou, idealmente para mais de 95%.
 
 Siga as instruções do documento do trabalho para a entrega final. Boa sorte!
+
+## Resultados
+
+| Métrica | Inicial | Final |
+|---|---|---|
+| Testes | 50 | 83 |
+| Cobertura (stmts / branches / funcs / lines) | 85,41 / 58,82 / 100 / 98,64% | 100 / 100 / 100 / 100% |
+| Mutantes sobreviventes / sem cobertura | 44 / 12 | 0 / 0 |
+| **Mutation score** | **73,71%** | **100,00%** |
+
+Os 7 mutantes equivalentes (que não alteram o comportamento observável) estão marcados em `src/operacoes.js` com `// Stryker disable next-line`, acompanhados da justificativa.
+
+### Como executar
+
+```bash
+npm install
+npm test            # testes
+npm run coverage    # cobertura de código
+npm run mutate      # teste de mutação (StrykerJS) – relatório em reports/mutation/mutation.html
+```
+
+### Entregáveis
+
+- `docs/Relatorio-Teste-de-Mutacao.pdf` – relatório escrito (fonte em `docs/relatorio.html`).
+- `docs/inicial/` e `docs/final/` – relatórios do Stryker da primeira e da última execução.
+- `docs/img/` – capturas de tela utilizadas no relatório.

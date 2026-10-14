@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Relatório – Teste de Mutação</title>
+<style>
+  @page { size: A4; margin: 18mm 18mm 16mm 18mm; }
+  body { font-family: "Segoe UI", Calibri, Arial, sans-serif; font-size: 10pt; line-height: 1.33; color: #111; margin: 0; }
+  h1 { font-size: 14pt; margin: 10px 0 5px; border-bottom: 2px solid #1f4e79; padding-bottom: 3px; color: #1f4e79; }
+  h2 { font-size: 12pt; margin: 12px 0 4px; color: #1f4e79; }
+  p { margin: 4px 0 6px; text-align: justify; }
+  code { font-family: Consolas, monospace; font-size: 9.5pt; background: #f1f3f5; padding: 0 3px; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; margin: 6px 0 8px; font-size: 9.5pt; }
+  th, td { border: 1px solid #bbb; padding: 3px 6px; text-align: center; }
+  th { background: #e8eef5; }
+  td.l { text-align: left; }
+  ul { margin: 4px 0 6px 18px; padding: 0; }
+  li { margin: 2px 0; }
+  .capa { height: 255mm; display: flex; flex-direction: column; justify-content: space-between; text-align: center; page-break-after: always; }
+  .capa .topo { font-size: 13pt; letter-spacing: .5px; margin-top: 20mm; }
+  .capa .titulo { font-size: 22pt; font-weight: 700; color: #1f4e79; }
+  .capa .sub { font-size: 12pt; color: #444; margin-top: 8px; }
+  .capa .autor { font-size: 12.5pt; line-height: 1.7; }
+  .capa .rodape { font-size: 11pt; margin-bottom: 10mm; }
+  figure { margin: 6px 0 8px; page-break-inside: avoid; }
+  figcaption { font-size: 8.5pt; color: #555; text-align: center; margin-top: 2px; }
+  .crop { overflow: hidden; border: 1px solid #ccc; width: 82%; margin: 0 auto; }
+  .crop img { display: block; width: 100%; }
+  .full { width: 72%; border: 1px solid #ccc; display: block; margin: 0 auto; }
+  .mut { page-break-inside: avoid; }
+  .quebra { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<section class="capa">
+  <div class="topo">Disciplina: <b>Teste de Software</b></div>
+  <div>
+    <div class="titulo">Análise de Eficácia de Testes<br>com Teste de Mutação</div>
+    <div class="sub">Avaliação e fortalecimento da suíte de testes do projeto <i>operacoes-mutante</i> com StrykerJS</div>
+  </div>
+  <div class="autor">
+    <b>Pedro Henrique Barbosa Montandon de Araújo</b><br>
+    Matrícula: 850897<br>
+    Repositório: github.com/pedroMontandon/operacoes-mutante
+  </div>
+  <div class="rodape">2026</div>
+</section>
+
+<h1>1. Análise Inicial</h1>
+<p>O projeto é uma biblioteca com 50 funções matemáticas (<code>src/operacoes.js</code>) e uma suíte Jest com 50 testes, um por função (<code>test/operacoes.test.js</code>). Após <code>npm install</code>, todos os testes passaram. O relatório de cobertura (<code>npm test -- --coverage</code>) e a primeira execução do StrykerJS 10 (<code>npx stryker run</code>, configurado em <code>stryker.conf.json</code> com o <i>jest-runner</i> e <code>coverageAnalysis: "perTest"</code>) produziram os seguintes números:</p>
+<table>
+  <tr><th>Métrica (suíte original)</th><th>Statements</th><th>Branches</th><th>Functions</th><th>Lines</th><th>Mutation score</th></tr>
+  <tr><td class="l">Valor</td><td>85,41%</td><td>58,82%</td><td>100%</td><td>98,64%</td><td><b>73,71%</b></td></tr>
+</table>
+<figure>
+  <img class="full" src="img/resumo-inicial.png" alt="Resumo inicial do Stryker">
+  <figcaption>Figura 1 – Primeira execução do Stryker: 213 mutantes, 157 detectados (154 mortos + 3 timeouts), 44 sobreviventes e 12 sem cobertura.</figcaption>
+</figure>
+<p><b>Discrepância.</b> Todas as funções e 98,64% das linhas são executadas pelos testes, mas mais de um quarto dos mutantes (56 de 213) não é detectado. A cobertura apenas indica que o código <i>rodou</i>; ela não mede se as asserções verificam o comportamento. A suíte original testa, para cada função, um único “caminho feliz”: não há casos de borda (igualdade, zero, limites), nem entradas que produzam o resultado oposto (ex.: um número não primo), nem verificação das mensagens de erro. Assim, operadores trocados, condições substituídas por <code>true</code>/<code>false</code> e mensagens apagadas passam despercebidos. A cobertura de <i>branches</i> (58,82%) já dava uma pista, mas mesmo ela ignora a qualidade das asserções.</p>
+
+<h1>2. Análise de Mutantes Críticos</h1>
+
+<div class="mut">
+<h2>2.1 <code>isMaiorQue</code> – EqualityOperator <code>a &gt; b</code> → <code>a &gt;= b</code> (linha 104)</h2>
+<figure>
+  <div class="crop" style="aspect-ratio: 2200 / 300"><img src="img/mutante-183.png" style="margin-top: -26.4%"></div>
+  <div class="crop" style="aspect-ratio: 2200 / 170; margin-top: 3px"><img src="img/mutante-183.png" style="margin-top: -54.3%"></div>
+  <figcaption>Figura 2 – Mutante sobrevivente em <code>isMaiorQue</code>, coberto por 1 teste.</figcaption>
+</figure>
+<p><b>O que a mutação fez:</b> trocou o operador relacional estrito por não estrito. <b>Por que sobreviveu:</b> o único teste é <code>isMaiorQue(10, 5) === true</code>. Para 10 e 5, <code>&gt;</code> e <code>&gt;=</code> dão o mesmo resultado; a diferença só aparece na fronteira <code>a === b</code>, que nunca é testada. O mesmo padrão afetou <code>isMenorQue</code> (<code>&lt;</code> → <code>&lt;=</code>) e as variantes <code>return true</code> de ambas e de <code>isEqual</code>, pois nenhum teste espera <code>false</code>.</p>
+</div>
+
+<div class="mut">
+<h2>2.2 <code>isPrimo</code> – EqualityOperator <code>i &lt; n</code> → <code>i &gt;= n</code> (linha 74)</h2>
+<figure>
+  <div class="crop" style="aspect-ratio: 2200 / 350"><img src="img/mutante-121.png" style="margin-top: -26.4%"></div>
+  <figcaption>Figura 3 – Mutante sobrevivente na condição do laço de <code>isPrimo</code>.</figcaption>
+</figure>
+<p><b>O que a mutação fez:</b> inverteu a condição de parada do laço. Com <code>i = 2</code> e <code>n ≥ 3</code>, <code>2 &gt;= n</code> é falso e o laço nunca executa: a função passa a responder <code>true</code> para <b>qualquer</b> <code>n &gt; 1</code>. <b>Por que sobreviveu:</b> o único teste é <code>isPrimo(7) === true</code>; como 7 é primo, a função mutada acerta “por acaso”. Sem um número composto na suíte, o teste não exercita o caminho que retorna <code>false</code> dentro do laço. Pelo mesmo motivo sobreviveram a remoção do corpo do laço, <code>n % i</code> → <code>n * i</code> e <code>n &lt;= 1</code> → <code>n &lt; 1</code> (falta testar <code>isPrimo(1)</code>).</p>
+</div>
+
+<div class="mut">
+<h2>2.3 <code>medianaArray</code> – MethodExpression: remoção do <code>.sort()</code> (linha 109)</h2>
+<figure>
+  <div class="crop" style="aspect-ratio: 2200 / 450"><img src="img/mutante-200.png" style="margin-top: -26.4%"></div>
+  <figcaption>Figura 4 – Mutante sobrevivente que elimina a ordenação na mediana.</figcaption>
+</figure>
+<p><b>O que a mutação fez:</b> removeu a ordenação, de modo que a mediana passa a ser o elemento central do array na ordem recebida. <b>Por que sobreviveu:</b> o teste usa <code>[1, 2, 3, 4, 5]</code>, que já está ordenado e tem tamanho ímpar. Ordenar ou não dá o mesmo resultado, e por isso também sobreviveram o comparador <code>a + b</code> e <code>() =&gt; undefined</code>. Como não há array de tamanho par, o ramo <code>(sorted[mid - 1] + sorted[mid]) / 2</code> nunca é executado (é a única linha descoberta) e seus mutantes ficaram como <i>NoCoverage</i>.</p>
+</div>
+
+<h1>3. Solução Implementada</h1>
+<p>Os 50 testes originais foram mantidos e acrescentou-se um bloco <code>describe('Testes adicionais para matar mutantes sobreviventes')</code> com 33 novos testes, organizados pelos mesmos blocos do código-fonte. Os testes que matam os mutantes analisados são:</p>
+<ul>
+  <li><b>Comparações:</b> <code>isMaiorQue(5, 5)</code> e <code>isMaiorQue(5, 10)</code> devem ser <code>false</code>; idem para <code>isMenorQue(5, 5)</code>/<code>(10, 5)</code> e <code>isEqual(7, 8)</code>. O caso de igualdade é exatamente o ponto em que <code>&gt;</code> e <code>&gt;=</code> divergem, e os casos falsos matam as mutações <code>return true</code>.</li>
+  <li><b>Primos:</b> <code>isPrimo(4)</code>, <code>(9)</code> e <code>(15)</code> devem ser <code>false</code>; <code>isPrimo(1)</code>, <code>(0)</code> e <code>(-7)</code> devem ser <code>false</code>; <code>isPrimo(2)</code> deve ser <code>true</code>. Números compostos obrigam o laço a executar e a encontrar um divisor, o que falha com <code>i &gt;= n</code>, com o corpo removido ou com <code>n * i</code>. O valor 1 testa a fronteira de <code>n &lt;= 1</code>.</li>
+  <li><b>Mediana:</b> <code>medianaArray([5, 1, 3]) === 3</code> (ímpar e desordenado, mata a remoção do <code>sort</code> e os comparadores inválidos), <code>[4, 1, 3, 2] === 2.5</code> e <code>[10, 20, 30, 50] === 25</code> (tamanho par: cobre o ramo antes ignorado e distingue <code>/ 2</code>, <code>mid - 1</code> e <code>+</code>), além de um teste garantindo que o array de entrada não é alterado.</li>
+</ul>
+<p>Os demais sobreviventes foram eliminados com o mesmo raciocínio de <b>fronteiras</b> e <b>resultados opostos</b>: <code>raizQuadrada(0)</code> e <code>fatorial(0)</code> (fronteira de <code>n &lt; 0</code>); <code>clamp(-5, 0, 10)</code> e <code>clamp(15, 0, 10)</code> (ramos de mínimo e máximo); <code>isPar(7)</code>, <code>isImpar(4)</code> e <code>isDivisivel(10, 3)</code> esperando <code>false</code>; <code>mediaArray([])</code> e arrays vazios em máximo, mínimo e mediana; conversões com 100 °C ↔ 212 °F (o valor 0 °C anula a multiplicação e escondia trocas de <code>*</code> por <code>/</code>); e <code>toThrow('mensagem exata')</code> em todas as validações, que mata os mutantes <i>StringLiteral</i> que esvaziavam as mensagens de erro.</p>
+<p><b>Mutantes equivalentes.</b> Sete sobreviventes não podem ser mortos por nenhum teste, pois não alteram o comportamento observável: (i) em <code>fatorial</code>, o atalho <code>if (n === 0 || n === 1) return 1</code> (4 mutantes), porque o laço <code>for (i = 2; i &lt;= n; …)</code> já devolve 1 nesses casos; (ii) em <code>produtoArray</code>, <code>if (numeros.length === 0) return 1</code> → <code>if (false)</code>, porque <code>reduce</code> com valor inicial 1 também devolve 1; (iii) em <code>clamp</code>, <code>&lt;</code> → <code>&lt;=</code> e <code>&gt;</code> → <code>&gt;=</code>, porque quando <code>valor === min</code> retornar <code>min</code> ou <code>valor</code> é a mesma coisa. Eles foram marcados no código com o comentário oficial do Stryker <code>// Stryker disable next-line &lt;mutador&gt;: justificativa</code>, que apenas os exclui do cálculo (status <i>Ignored</i>) sem mudar o código executado. A diretiva atua por linha e mutador, por isso 4 mutantes já mortos nessas mesmas linhas também passaram a constar como ignorados (11 no total).</p>
+
+<h1>4. Resultados Finais</h1>
+<table>
+  <tr><th>Métrica</th><th>Inicial</th><th>Final</th></tr>
+  <tr><td class="l">Testes</td><td>50</td><td>83</td></tr>
+  <tr><td class="l">Cobertura (statements / branches / functions / lines)</td><td>85,41 / 58,82 / 100 / 98,64%</td><td>100 / 100 / 100 / 100%</td></tr>
+  <tr><td class="l">Mutantes detectados (mortos + timeout)</td><td>157</td><td>202</td></tr>
+  <tr><td class="l">Sobreviventes / sem cobertura</td><td>44 / 12</td><td>0 / 0</td></tr>
+  <tr><td class="l">Mutation score sem ignorar equivalentes (206/213)</td><td>73,71%</td><td>96,71%</td></tr>
+  <tr><td class="l"><b>Mutation score final</b> (equivalentes ignorados)</td><td><b>73,71%</b></td><td><b>100,00%</b></td></tr>
+</table>
+<figure>
+  <img class="full" src="img/resumo-final.png" alt="Resumo final do Stryker">
+  <figcaption>Figura 5 – Execução final do Stryker: 202 mutantes detectados, 0 sobreviventes, 11 ignorados. Mutation score de 100%.</figcaption>
+</figure>
+<p>Mesmo contando os 7 mutantes equivalentes como sobreviventes, a nova suíte mata todos os mutantes que podem ser mortos (96,71%, o máximo teoricamente possível para esse código). Com os equivalentes excluídos, o score atinge 100%, superando a meta de 98%.</p>
+
+<h1>5. Conclusão</h1>
+<p>O trabalho mostrou que uma suíte com 100% de cobertura de funções e quase 100% de linhas podia deixar passar mais de um quarto dos defeitos introduzidos. A cobertura responde “o código foi executado?”; o teste de mutação responde “os testes perceberiam se o código estivesse errado?”. Cada mutante sobrevivente apontou de forma concreta uma asserção ausente: uma fronteira não testada, um resultado <code>false</code> nunca verificado, um dado de entrada que mascarava o erro (array já ordenado, número primo, 0 °C). Também ficou claro que o score precisa ser interpretado com senso crítico, pois mutantes equivalentes existem e devem ser identificados e justificados, não “mortos” com testes artificiais. O custo do teste de mutação é maior que o da cobertura, mas, como métrica de qualidade de testes, ele é muito mais confiável e orienta diretamente quais testes escrever.</p>
+
+</body>
+</html>
